@@ -1,0 +1,17 @@
+cameratexture HWATCAM1 64 64
+cameratexture HWATCAM2 64 64
+cameratexture HWATCAM3 64 64
+cameratexture HWATCAM4 64 64
+cameratexture HWATCAM5 64 64
+cameratexture HWATCAM6 64 64
+cameratexture HWATCAM7 64 64
+cameratexture HWATCAM8 64 64
+cameratexture HWATSRV1 128 128
+
+//texture IODROCK1
+    //allowdecals
+    //pic IODROCK1 rand 6 10
+    //pic IODROCK2 rand 6 10
+    //pic IODROCK3 rand 6 10
+
+//warp flat DLOOD1

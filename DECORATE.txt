@@ -1,0 +1,60 @@
+Actor HWAT_ComDummy : Inventory {inventory.maxamount 20}
+Actor HWAT_ComDummy2 : Inventory {inventory.maxamount 20}
+Actor HWAT_CamDummy : Inventory { inventory.maxamount 10}
+Actor HWAT_MarkDummy
+{
+	+NOBLOCKMAP
+	+NOSECTOR
+	+NOGRAVITY
+	+DONTSPLASH
+	+NOCLIP
+	RenderStyle None
+	CameraHeight 0
+	States
+	{
+	Spawn:
+		OUCH A 1 A_FadeOut(0.01,0)
+		Loop
+	}
+}
+Actor HWAT_MarkDummy2 : HWAT_MarkDummy
+{
+	States
+	{
+	Spawn:
+		OUCH A 1 A_FadeOut(0.1,0)
+		Loop
+	}
+}
+Actor HWAT_ComCycle1 : Inventory {inventory.maxamount 500}
+Actor HWAT_ComCycle2 : Inventory {inventory.maxamount 500}
+Actor HWAT_MarkProj : FastProjectile
+{
+	Speed 2000
+	Damage 0
+	Radius 1
+	Height 1
+	+NOGRAVITY
+	+DONTSPLASH
+	Renderstyle none
+	States
+	{
+	Spawn:
+		OUCH A 10
+	Death:
+		OUCH A 1 A_FadeOut(0.01,0)
+		Loop
+	}
+}
+Actor HWAT_MarkProj2 : HWAT_MarkProj
+{
+	States
+	{
+	Spawn:
+		OUCH A 10
+	Death:
+		OUCH A 100
+		Loop
+	}
+}
+Actor HWAT_Hide : Inventory {inventory.maxamount 20}

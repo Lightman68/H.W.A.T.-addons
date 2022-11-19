@@ -1,0 +1,13 @@
+nosave int sv_hd68_hwatcam_hscale = 468;
+nosave int sv_hd68_hwatcam_wscale = 1340;
+nosave int sv_hd68_hwatcam_hpos = 84;
+nosave int sv_hd68_hwatcam_wpos = 600;
+server int sv_hd68_hwatcam_rate = 2;
+//server bool sv_hd68_hwatcam_quality = FALSE;
+user int sv_hd68_hwatcom_smooth = 50;
+user bool sv_hd68_hwatcom_helper = FALSE;
+user bool sv_hd68_hwatcom_reset = TRUE; 
+user bool sv_hd68_hwatcom_mock = FALSE;
+user string hwatcom_c = "";
+user string hwatcom_v = "lead";
+user string sv_hd68_hwatcom_justsaid = "";

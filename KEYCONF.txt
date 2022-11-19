@@ -1,0 +1,41 @@
+addkeysection "H.W.A.T. Tactical" H.W.A.T.
+
+addmenukey "Cycle Mini Coop-Spy Cam" hwat_spy
+addmenukey "Quick Comms" +hwat_com
+addmenukey "Mark" hwat_mark
+addmenukey "Swap Menu" hwat_swap
+addmenukey "(Crouch) Swap Menu" +hwat_swap2
+
+addkeysection "H.W.A.T. Quicker Comms" H.W.A.T.2
+addmenukey "< CLEAR >" hwat_q_clear
+addmenukey "< FALL BACK >" hwat_q_fallback
+addmenukey "< NVM >" hwat_q_nvm
+addmenukey "< YES >" hwat_q_yes
+addmenukey "< NO >" hwat_q_no
+addmenukey "< GO GO GO! >" hwat_q_gogogo
+addmenukey "< DANGER! >" hwat_q_danger
+addmenukey "< HELP! >" hwat_q_help
+addmenukey "\cf* COVER" hwat_q_cover
+
+alias hwat_spy "pukename HwatCamScript"
+alias +hwat_com "pukename HwatComms always"
+alias -hwat_com "pukename HwatKillComms always"
+alias hwat_mark "pukename HwatMark"
+alias hwat_swap "pukename HwatSwapComms"
+alias +hwat_swap2 "pukename HwatSwapComms; +crouch"
+alias -hwat_swap2 "-crouch"
+
+alias hwat_q_clear 		"pukename HwatComms always 1; wait 1; pukename HwatKillComms always"
+alias hwat_q_fallback	"pukename HwatComms always 2; wait 1; pukename HwatKillComms always"
+alias hwat_q_nvm 		"pukename HwatComms always 3; wait 1; pukename HwatKillComms always"
+alias hwat_q_yes 		"pukename HwatComms always 4; wait 1; pukename HwatKillComms always"
+alias hwat_q_no 		"pukename HwatComms always 5; wait 1; pukename HwatKillComms always"
+alias hwat_q_gogogo 	"pukename HwatComms always 6; wait 1; pukename HwatKillComms always"
+alias hwat_q_danger 	"pukename HwatComms always 7; wait 1; pukename HwatKillComms always"
+alias hwat_q_help 		"pukename HwatComms always 8; wait 1; pukename HwatKillComms always"
+alias hwat_q_cover 		"pukename HwatComms always 9; wait 1; pukename HwatKillComms always"
+
+//addkeysection "______________________" H.W.A.T.done
+//alias +crouch +hwat_swap
+
+//alias -hwat_com "puke -HwatKillComms;wait 3;say_team $sv_hd68_hwatcom_justsaid" //literally just BS'd this one

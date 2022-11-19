@@ -1,0 +1,768 @@
+#library "HWATCOM.acs"
+#import "const.acs"
+#include "zcommon.acs"
+
+
+//The array size of lines1
+#define COM_L1 6 		//for the time being all of these should stay the same
+#define COM_L2 6		
+#define COM_L3 6		//unused
+#define COM_CH 6 		//mock chat size
+#define COM_W 3			//number of comm menus
+#define COM_D 2			//number of comm dimensions
+#define COM_L1w -1.6	//menu location
+#define COM_L1h 0.5
+#define COM_Mw -1.10	//mock chat location
+#define COM_Mh -0.75
+
+str lines1[COM_D][COM_W][COM_L1] = 	{
+										{
+											{"Cancel", "Clear", "I'm Hurt!", "Need Help!", "They're running!", "Danger!"},
+											{"Holding", "Let's Move", "I'm ready", "Nvm", "Careful", "Fall Back!"},
+											{"Can't Do That", "Roger", "No", "Yes", "On it", "Fleeing"},
+										},
+										{
+											{"Cancel", "Go go go!", "Not yet", "On my signal...", "Regroup \cf*", "Thanks"},
+											{"Attack \cf*", "Defend \cf*", "Cover that \cf*", "Reposition \cf*", "Make entry \cf*", "Stack Up \cf*"},
+											{"Deploy > \c*Bront", "Deploy > \c*BFG", "Deploy > \c*HE-AT", "Deploy > \c*H.E.R.P.", "Deploy > \c*Sniper", "Deploy > \c*Grenade"},
+										}
+									};
+str lines2[COM_CH] = {"", "", "", "", "", ""}; 	//Player commands
+int linesN[COM_CH] = {0,0,0,0,0,0};								//Player names
+str linesNc[COM_CH] = {"", "", "", "", "", ""};	//Player namecolors
+str linesC[6] = {"\cj", "\cn", "\cp", "\co", "\ca", "\ci"};
+
+//int linesS[5] = {3, 2200, 4400, 6600, 8800};
+
+//The constants for spacing out the words in the commands
+int yspace = 50;
+int xspace = 0.0334;
+
+
+//Creates quick comms menu
+script "HwatComms" (int quicker) net
+{
+	if(CheckInventory("HWAT_ComDummy")>0){HudMessage(s:"c h u g"; HUDMSG_TYPEON, 0, CR_RED,0.5,0.68,0.1,0.06,0.5,0.5);}
+	else{
+	int player = PlayerNumber();
+	
+	//This only detects if p1 is alive. Everyone can at least open comms now but they can do so even in death
+	//if(GetActorProperty(player,APROP_HEALTH) >= 1)
+	//{
+	GiveInventory("HWAT_ComDummy",3);
+	int pOld,aOld,pNew,aNew,pFunc,aFunc,pSmooth,aSmooth,Dummy,dFunc,cCons,check1;
+	int CS = GetUserCVar(player,"sv_hd68_hwatcom_smooth"); 						//Customizable sensitivity!
+	str col = "";
+	if (CS < 1){SetUserCVar(player,"sv_hd68_hwatcom_smooth",1);CS=1;}			//We can't have nice things
+	
+	//everything that has to do with traversing the com menus using mouse input
+	//and other aesthetic things
+	
+	while(CheckInventory("HWAT_ComDummy") > 2)
+	{
+		Dummy = CheckInventory("HWAT_ComDummy");
+	
+		//Check mouse input
+		pOld = GetActorPitch(0);
+		aOld = GetActorAngle(0);
+		delay(1);
+		pNew = GetActorPitch(0);
+		aNew = GetActorAngle(0);
+		SetActorPitch(0,pOld);
+		SetActorAngle(0,aOld);
+		
+		//Removes bug when facing east (east is 0.0 with fixed values)
+		if (aOld-aNew < -0.2)
+		{aOld += 1.0;}
+		if (aOld-aNew > 0.2)
+		{aOld -= 1.0;}
+		
+		pOld = (pOld-pNew)/25; //the greater the division the less sensitive but trims input
+		aOld = (aOld-aNew)/50;
+		
+		//Buffer
+		pSmooth += pOld;
+		aSmooth += aOld;
+		
+			//Give dummies in order to cycle to a com
+		if (pSmooth > CS){TakeInventory("Hwat_ComCycle1",1); pSmooth=0;}
+		else if (pSmooth < -CS) {GiveInventory("Hwat_ComCycle1",1); pSmooth=0;}
+		if (aSmooth > CS){GiveInventory("Hwat_ComCycle2",1); aSmooth=0; }
+		else if (aSmooth < -CS){TakeInventory("Hwat_ComCycle2",1); aSmooth=0;}
+		
+			//Cleans up the left-right cycler
+		if(aSmooth < 0 && CheckInventory("HWAT_ComCycle2") <= COM_W-COM_W){
+			aSmooth = 0;	}
+		if(aSmooth > 0 && CheckInventory("HWAT_ComCycle2") >= COM_W-1){
+			aSmooth = 0;	}
+			//Cleans up the up-down cycler
+		if(pSmooth > 0 && CheckInventory("HWAT_ComCycle1") <= COM_L1-COM_L1){
+			pSmooth = 0;	}
+		if(pSmooth < 0 && CheckInventory("HWAT_ComCycle1") >= COM_L1-1){
+			pSmooth = 0;	}
+		
+			//Clamps dummies' values dependant on constant
+		if (CheckInventory("Hwat_ComCycle1") > COM_L1-1){TakeCycle1(); GiveInventory("Hwat_ComCycle1",COM_L1-1); pSmooth = 0;}
+		if (CheckInventory("Hwat_ComCycle2") > COM_W-1){TakeCycle2(); GiveInventory("Hwat_ComCycle2",COM_W-1); aSmooth = 0;}
+		
+			//Checks dummies for cycling menu
+		pFunc = CheckInventory("HWAT_ComCycle1");//Cycles up and down
+		aFunc = CheckInventory("HWAT_ComCycle2");//Cycles left and right
+		dFunc = CheckInventory("HWAT_ComDummy2");//Cycles between menus
+		SetFont("SMALLFONT");
+		
+		//Consistency with chosen com (cuz sometimes mock chat prints the wrong com. Possibly not needed anymore once i fix this damn bug)
+		cCons = lines1[dFunc][aFunc][pFunc];
+		
+		//printbold(d:cCons);
+		
+		//Shows mockchat history
+		if (GetUserCVar(player,"sv_hd68_hwatcom_mock") ==  TRUE)
+		{
+		
+		for(int i = 0; i < COM_CH-1; i++) //Note COM_CH-1 is subtracting by 1 so it doesn't produce trash comms at the top part of the chat box. Must rectify to restore 6 chat lines
+			{
+				//If there is a blank in the array slot AHEAD, don't print. Essentially only displaying the history and not sequence things
+				if(lines2[i+1] == "" | linesN[i+1] == 0 | linesNc[i+1] == ""){continue;}
+					{
+						SetFont("CHATBOX1");
+						HudMessage(s:"A"; HUDMSG_PLAIN, 57, 0, COM_Mw+0.006, COM_Mh-FixedDiv(2,yspace)+0.01, 5.0);
+						SetFont("SMALLFONT");
+						HudMessage(s:linesNc[i+1], n:linesN[i+1], s:"\cu: ", s:linesC[0], s:lines2[i+1]; HUDMSG_PLAIN, 50+i, CR_DARKGRAY, COM_Mw, COM_Mh+FixedDiv(i,yspace), 5.0);
+						//HudMessage(n:linesN[i+1], s:": ", s:linesC[0], s:lines2[i+1]; HUDMSG_PLAIN, 50+i, CR_DARKGRAY, COM_Mw, COM_Mh+FixedDiv(i,yspace), 5.0);
+					}
+			}
+		}
+		//Don't print in mockchat if cancel was chosen
+		if (cCons == lines1[0][0][0] | cCons == lines1[1][0][0]){SetUserCVarString(player,"sv_hd68_hwatcom_justsaid","");}
+		else{	SetUserCVarString(player,"sv_hd68_hwatcom_justsaid",cCons);}
+		
+			//MENU SECTION
+		//fanceh flashy selection (it just works)
+		HudMessage(s:cCons; HUDMSG_FADEOUT, 0, CR_GOLD, COM_L1w-xspace*(aFunc+1), COM_L1h+FixedDiv(pFunc,yspace), 0.05, 0.02);
+		HudMessage(s:cCons; HUDMSG_FADEOUT, 0, CR_RED, COM_L1w-xspace*(aFunc+1), COM_L1h+FixedDiv(pFunc,yspace), 0.05, 0.05);
+		//Displays menu (fairly static atm)
+		for(i = 0; i < COM_L1; i++)
+		{
+				HudMessage(s:linesC[aFunc+(dFunc*3)], s:lines1[dFunc][aFunc][i]; HUDMSG_PLAIN, 0, CR_UNTRANSLATED, COM_L1w-xspace*(aFunc+1), COM_L1h+FixedDiv(i,yspace), 0.05);
+		}
+		
+			//SCROLL HELPER SECTION
+			//These (first 2 lines) allow for the sliders to slide farther/shorter before the "snap" happens...
+			//They dont actually choose the com, but help the user to visually see where the variables are going to end up.
+			//pFunc and aFunc are multiplied/divided in order for the + to snap at the correct position
+		int CSaCal = (FixedMul(FixedDiv(35,CS+1),FixedDiv(aSmooth,1000))); 	//(35/CS+1)(aSmooth/1000)
+		int CSpCal = (FixedMul(FixedDiv(10,CS+1),FixedDiv(pSmooth,1000))); 	//(5/CS+1)(pSmooth/1000)
+		if(GetUserCVar(player, "sv_hd68_hwatcom_helper") == TRUE){
+		HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)-(CSaCal), COM_L1h-FixedDiv(2,yspace)+0.008, 0.05);
+		HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)+0.02, COM_L1h-FixedDiv(2,yspace)+0.04+(0.009*(FixedMul(pFunc,2.4))-(CSpCal)), 0.05);
+		//pFunc and aFunc are multiplied/divided in order for the + to snap at the correct position
+		}
+		
+		//The 3 little diamonds indicating the horizontal menus
+		for(i = 0; i < COM_W; i++)
+		{
+				HudMessage(s:linesC[i+dFunc*3], s:"*"; HUDMSG_PLAIN, 0, CR_UNTRANSLATED, COM_L1w-xspace*(i+1), COM_L1h-FixedDiv(2,yspace)+(dFunc*1000), 0.05);
+		}
+		int quicker2 = strparam(s:"\cf",s:cCons);
+		switch (quicker)
+		{
+		case 1:
+		QuickerComms(1,0,0,quicker2);
+		break;
+		case 2:
+		QuickerComms(5,1,0,quicker2);
+		break;
+		case 3:
+		QuickerComms(3,1,0,quicker2);
+		break;
+		case 4:
+		QuickerComms(3,2,0,quicker2);
+		break;
+		case 5:
+		QuickerComms(2,2,0,quicker2);
+		break;
+		case 6:
+		QuickerComms(1,0,1,quicker2);
+		break;
+		case 7:
+		QuickerComms(5,0,0,quicker2);
+		break;
+		case 8:
+		QuickerComms(3,0,0,quicker2);
+		break;
+		case 9:
+		QuickerComms(2,1,1,quicker2);
+		break;
+		}
+		if(quicker < 1){
+		GiveInventory("HWAT_ComDummy",1); 										//Intentionally accrues dummyness so situation comms can work
+		}
+		//debug
+		//SetFont("BIGFONT");
+		//HudMessage(d:CheckInventory("HWAT_ComDummy"); HUDMSG_PLAIN, 0, CR_BLUE, 0.5, 0.1, 0.1);
+		//HudMessage(d:aFunc; HUDMSG_PLAIN, 0, CR_BRICK, 0.54, 0.1, 0.1);
+		
+		//press crouch to switch to a different menu
+	}
+	
+//Lines2 handles mockchat
+//cCons is the selected com
+//Begin execution of displaying selected comms (no more loops)
+	
+	//Prevents a com if button was tapped AND if button was on CANCEL (normal comms)
+	{
+		if(Dummy > 8 | cCons != lines1[0][0][0] | cCons != lines1[1][0][0]) 	//If held and it is not cancel (on either com menu dimension)
+		{
+			if (cCons != lines1[0][0][0] | cCons != lines1[1][0][0]) 			//again if no cancel
+			{
+				if(quicker < 1) 												//if not pressing a quicker(tm) comm then just do regular shit
+				lines2[0] = cCons;
+				linesN[0] = PlayerNumber()+1;									//idk why it fuckn needs +1 it just works im tired af
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");		//no +1 for this one because.... ?????
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				int s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/", i:cCons+1);
+				//debug
+				//printbold(s:s);
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+				Log(n:0, s:": ",s:cCons);
+				PrintMockChat();
+			}
+		}
+	
+	
+	//Situational Comms (rapidly tap com button) (Mark Friendlies > Enemies > REGROUP > OUTTA HERE > ROGER)
+		else if(CheckInventory("Hwat_ComDummy") < 9 && (!CheckInventory("Hwat_ComCycle1")) && (!CheckInventory("Hwat_ComCycle2")))
+		{
+			int pTid;
+			if(ActivatorTID() != PLAYER_TID+PlayerNumber()){pTid = ActivatorTID();}
+			else{pTid = PLAYER_TID+PlayerNumber();}
+			SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","I've marked something...");
+			if(SetActivatorToTarget(0))
+			{	
+				int info = ClassifyActor(0);
+				//printbold(d:info);
+				ACS_NamedExecuteAlways("HwatMarkScript",0,pTid);				//This acs is called if the button is pressed while aimed at something/someone
+				
+				//If target is friendly :)
+				if (GetActorProperty(0,APROP_FRIENDLY))
+				{
+					lines2[0] = strparam(s:"\cn", n:0); //this goes first to get the name of the marked dude
+					SetActivator(pTid,AAPTR_DEFAULT);
+					/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+					linesN[0] = PlayerNumber()+1; //name of marker dude
+					linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+					SetUserCVarString(player,"sv_hd68_hwatcom_justsaid",lines2[0]);
+					Log(n:0, s:": \cn",s:lines2[0]);
+					PrintMockChat();
+					TakeDummy1();
+					
+					s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Ally");
+					PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+				}
+				
+				
+				//target is enemy >:(
+				else if (info == 34 | info == 48)
+				{
+					int log1 = strparam(s:"\ca ", n:0); //log chat
+					int log2 = strparam(s:"\ca", n:0, s:"!"); //mock chat
+					SetActivator(pTid,AAPTR_DEFAULT);
+					/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+					lines2[0] = log2;
+					Log(n:0, s:": \cgWatch Out! i've spotted a", s:log1);
+					linesN[0] = PlayerNumber()+1;
+					linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+					SetUserCVarString(player,"sv_hd68_hwatcom_justsaid","Watch out!!");
+					PrintMockChat();
+					TakeDummy1();
+					
+					s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Sus");
+					PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+				}
+			}//No mark on someone... well then say REGROUP if looking down
+			else if(GetActorPitch(0) > 0.23)
+			{
+				lines2[0] = "\cfRegroup";
+				Log(n:0,s:": \cfRegroup");
+				linesN[0] = PlayerNumber()+1;
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","Regroup");
+				PrintMockChat();
+				TakeDummy1();
+				
+				s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Regroupx");
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+			}//No REGROUP either... well then say IM OUTTA HERE if looking up
+			else if(GetActorPitch(0) < -0.23)
+			{
+				lines2[0] = "\cfI'm outta here!";
+				Log(n:0,s:": \cfI'm outta here!");
+				linesN[0] = PlayerNumber()+1;
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","I'm outta here!");
+				PrintMockChat();
+				TakeDummy1();
+				
+				s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/2146435090");
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+			}//No OUTTA HERE either... well then uh, ROGER
+			else
+			{
+				lines2[0] = "\cfRoger";
+				Log(n:0,s:": \cfRoger");
+				linesN[0] = PlayerNumber()+1;
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","Roger");
+				PrintMockChat();
+				TakeDummy1();
+				
+				s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Rogerx");
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+			}
+		}
+	}
+	//For worldly-existant markers
+	ACS_NamedExecuteAlways("HwatOfficerOrderMarks",0,aFunc,pFunc,dFunc);
+	//Resets comms
+	if(GetUserCVar(player, "sv_hd68_hwatcom_reset") == TRUE){
+	
+	int dumbcycle1 = CheckInventory("HWAT_ComCycle1");
+	int dumbcycle2 = CheckInventory("HWAT_ComCycle2");
+		TakeInventory("HWAT_ComCycle1",dumbcycle1);
+		TakeInventory("HWAT_ComCycle2",dumbcycle2);
+	}
+}
+} //the else statement at the start
+
+
+//Mock chat simulates chat scrolling up
+script "RecordMockChat" (void) net
+{
+	lines2[5] = lines2[4];
+	lines2[4] = lines2[3];
+	lines2[3] = lines2[2];
+	lines2[2] = lines2[1];
+	lines2[1] = lines2[0];
+	
+	linesN[5] = linesN[4];
+	linesN[4] = linesN[3];
+	linesN[3] = linesN[2];
+	linesN[2] = linesN[1];
+	linesN[1] = linesN[0];
+	
+	linesNc[5] = linesNc[4];
+	linesNc[4] = linesNc[3];
+	linesNc[3] = linesNc[2];
+	linesNc[2] = linesNc[1];
+	linesNc[1] = linesNc[0];
+}
+//Terminates menus and/or uses situation comms
+script "HwatKillComms" (void) net
+{
+	//if(CheckInventory("HWAT_ComDummy") > 0)
+	TakeDummy1();
+	delay(1);
+	TakeDummy1();
+	delay(1);
+	TakeDummy1();
+}
+
+//================THE DIRTY DIRTY MARK SCRIPTS==================================
+
+//Mark script
+script "HwatMarkScript" (int pTid, int comchoice, int onlymark) net
+{
+	//the cc's are for custom namecolor cvar
+	int tTid,nTid,nTid2,info1,test,player,cc1,cc2,cc3; //int oplayer killed
+	player = (PLAYER_TID-pTid)*-1;
+	//printbold(d:player);
+	if (player > 100) 	{player = player-player;}
+	else 				{str customc = GetUserCVarString(player,"hwatcom_c");}
+	//printbold(s:customc);
+	//TakeDummy1();
+	if(onlymark == 0) //from script "HwatMark", if not given from there then it skips this
+	{
+		//print(s:"Activot"); goodbye activot, you will be missed
+		tTid = ActivatorTID();
+		nTid = UniqueTID(0,1000+tTid); //the Id of the MapSpot
+		SpawnForced("HWAT_MarkDummy",GetActorX(0),GetActorY(0),GetActorZ(0)+GetActorProperty(0,APROP_HEIGHT)/2, nTid, 0);
+		ACS_NamedExecuteAlways("HwatMarkWarp",0,nTid); // Warp MapSpot on enemy/thing
+		info1 = strparam(n:0); // Monster's name for example
+		SetActivator(pTid,AAPTR_DEFAULT);
+		
+		//Makes it so the message is displayed for each player correctly, otherwise everyone would see from player 1's POV
+		for(int i = 0; i < 100; i++)
+		{
+			for(int j = 0; j < PlayerCount(); j++)
+			{
+				test = (VectorLength(GetActorX(nTid)-GetActorX(PLAYER_TID+j),GetActorY(nTid)-GetActorY(PLAYER_TID+j))>>16)/32;
+				SetActivator(PLAYER_TID+j,0);
+				cc1 = strparam(s:customc,s:"*");
+				cc2 = strparam(s:customc,s:".");
+				cc3 = strparam(s:customc,s:".");
+				HudMessageOnActor(nTid, 0, 640/2, 480/2, 0, -10+(20/(i+1)), 20000, -1, info1, 1873, CR_WHITE);
+				HudMessageOnActor(nTid, 0, 640/2, 480/2, 0, 0, 20000, -1, cc1, 1873, CR_GOLD);
+				HudMessageOnActor(nTid, 0, 640/2, 480/2, 0-test, -2, 20000, -1, cc2, 1873, CR_GOLD);
+				HudMessageOnActor(nTid, 0, 640/2, 480/2, 1+test, -2, 20000, -1, cc3, 1873, CR_GOLD);
+			}
+			delay(1);
+		}
+		//Reset back to player
+		SetActivator(pTid,AAPTR_DEFAULT);
+		//HudMessage(s:"Mark"; HUDMSG_FADEOUT, 0, CR_GOLD, COM_L1w, COM_L1h-0.1, 0.1, 1.0);
+	}
+	else //Display a mark at crosshair
+	{
+		int angle = GetActorAngle(pTid);
+		int pitch = GetActorPitch(pTid);
+		nTid = UniqueTID(0,1000); //the Id of the MapSpot
+		nTid2 = UniqueTID(0,1000); //Projectile
+		SpawnForced("HWAT_MarkDummy",GetActorX(0),GetActorY(0),GetActorZ(0)+GetActorProperty(0,APROP_HEIGHT)/2, nTid, 0);
+		SetActivator(nTid,0); //For warp
+		Warp(pTid,20.0,0.0,48.0,0.0,WARPF_NOCHECKPOSITION,"",0,0.0,0.0,0.0);
+		SetActivator(pTid,0); //<name>'s Mark
+		
+		switch(comchoice)
+		{
+			case 0:
+			info1 = strparam(n:0, s:"'s Mark");
+			SpawnProjectile(nTid,"HWAT_MarkProj",angle>>8,2000,-pitch>>2,0,nTid2);
+			break;
+			
+			case 1:
+			info1 = strparam(s:"\cf< Regroup >");
+			break;
+			
+			case 2:
+			info1 = strparam(s:"\cf< Attack >");
+			break;
+			
+			case 3:
+			info1 = strparam(s:"\cf< Defend >");
+			break;
+			
+			case 4:
+			info1 = strparam(s:"\cg< \ca! \cg>");
+			break;
+			
+			case 5:
+			info1 = strparam(s:"\cdv");
+			break;
+			
+			case 6:
+			info1 = strparam(s:"\cf>x<");
+			break;
+			
+			case 7:
+			info1 = strparam(s:"\cfStack up");
+			break;
+		}
+		//spawns special unclearable(?????) mark unless specified
+		if (comchoice > 0)
+		{
+			SpawnProjectile(nTid,"HWAT_MarkProj2",angle>>8,2000,-pitch>>2,0,nTid2);
+			for(i = 0; i < 350; i++)
+			{
+				for(j = 0; j < PlayerCount(); j++)
+				{
+					test = (VectorLength(GetActorX(nTid2)-GetActorX(PLAYER_TID+j),GetActorY(nTid2)-GetActorY(PLAYER_TID+j))>>16)/32;
+					SetActivator(PLAYER_TID+j,0);
+					customc = GetUserCVarString(player,"hwatcom_c");
+					cc1 = strparam(s:customc,s:"*");
+					cc2 = strparam(s:customc,s:".");
+					cc3 = strparam(s:customc,s:".");
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 0, -10+(20/(i+1)), 20000, -1, info1, 1873, CR_TAN);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 0, 0, 20000, -1, cc1, 1873, CR_LIGHTBLUE);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 0-test, -2, 20000, -1, cc2, 1873, CR_LIGHTBLUE);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 1+test, -2, 20000, -1, cc3, 1873, CR_LIGHTBLUE);
+				}
+				delay(1);
+			}
+		}
+		else
+		{
+			for(i = 0; i < 60; i++)
+			{
+				for(j = 0; j < PlayerCount(); j++)
+				{
+					test = (VectorLength(GetActorX(nTid2)-GetActorX(PLAYER_TID+j),GetActorY(nTid2)-GetActorY(PLAYER_TID+j))>>16)/32;
+					SetActivator(PLAYER_TID+j,0);
+					customc = GetUserCVarString(player,"hwatcom_c");
+					cc1 = strparam(s:customc,s:"*");
+					cc2 = strparam(s:customc,s:".");
+					cc3 = strparam(s:customc,s:".");
+					HudMessageOnActor(nTid2, 16868+player, 640/2, 480/2, 0, -10+(20/(i+1)), 20000, -1, info1, 1873, CR_DarkGrey);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 0, 0, 20000, -1, cc1, 1873, CR_DarkGreen);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 0-test, -2, 20000, -1, cc2, 1873, CR_DarkGreen);
+					HudMessageOnActor(nTid2, 0, 640/2, 480/2, 1+test, -2, 20000, -1, cc3, 1873, CR_DarkGreen);
+				}
+				delay(1);
+			}
+		}
+	}
+}
+//basically the same thing but for a dedicated button
+script "HwatMark" (int comchoice) net
+{
+	int onlymark = 0;
+	int player = PlayerNumber();
+	int pTid = PLAYER_TID+PlayerNumber();
+	SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","I've marked something...");
+	//Log(n:0, s:": I've marked something...");
+	if(SetActivatorToTarget(0))
+	{	
+		int info = ClassifyActor(0);
+		ACS_NamedExecuteAlways("HwatMarkScript",0,pTid,comchoice);
+		//printbold(d:info);
+		
+		//Friend :)
+			if (GetActorProperty(0,APROP_FRIENDLY))
+			{
+				lines2[0] = strparam(s:"\cn", n:0); //this goes first to get the name of executor
+				SetActivator(pTid,AAPTR_DEFAULT);
+				linesN[0] = PlayerNumber()+1;
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c"); //no +1 for this one because.... ?????
+				SetUserCVarString(player,"sv_hd68_hwatcom_justsaid",lines2[0]);
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				Log(n:0, s:": \cn",s:lines2[0]); //name of ally
+				PrintMockChat();
+				TakeDummy1();
+				
+				int s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Ally");
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+			}
+			
+			//Enemey >:o
+			else if (info == 34 | info == 48)
+			{
+				int log1 = strparam(s:"\ca ", n:0); //This prints as log speech
+				int log2 = strparam(s:"\ca", n:0, s:"!"); //This prints in the mockchat
+				SetActivator(pTid,AAPTR_DEFAULT);
+				lines2[0] = log2;
+				Log(n:0, s:": \cgWatch Out! i've spotted a", s:log1);
+				linesN[0] = PlayerNumber()+1;
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_c");
+				SetUserCVarString(player,"sv_hd68_hwatcom_justsaid","Watch out!!");
+				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
+				PrintMockChat();
+				TakeDummy1();
+				
+				s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/Sus");
+				PlaySound(0,s,CHAN_VOICE,1.0,0,0.2);
+		}
+	}
+	else
+	{
+		onlymark = 1; //Makes 10605 skip the first part of its script... to only produce a map marker
+		ACS_NamedExecuteAlways("HwatMarkScript",0,pTid,comchoice,onlymark);
+	}
+}
+
+//Warps the MarkDummy onto the target
+script "HwatMarkWarp" (int nTid) net
+{
+	int x,y,z;
+	
+	for(int i = 0; i < 100; i++)
+	{
+		//Get's the location of the activator (the marked object)
+		x = GetActorX(0);
+		y = GetActorY(0);
+		z = GetActorZ(0);
+		SetActorPosition(nTid, x, y, z, 0);
+		delay(1);
+	}
+}
+
+//================end of THE DIRTY DIRTY MARK SCRIPTS===========================
+
+script "HwatSwapComms" (void) net
+{
+	if(CheckInventory("HWAT_ComDummy2") < 1 && CheckInventory("HWAT_ComDummy") > 3)
+	{
+		GiveInventory("HWAT_ComDummy2",1);
+	}
+	else if(CheckInventory("HWAT_ComDummy2") > 0 && CheckInventory("HWAT_ComDummy") > 3)
+	{
+		TakeInventory("HWAT_ComDummy2",2);
+	}
+}
+script "HwatOfficerOrderMarks" (int aFunc, int pFunc, int dFunc)
+{
+	//print(d:aFunc);
+	if(dFunc == 1)
+	{
+		int comchoice;
+		if (aFunc == 0)
+		{
+			if (pFunc == 4)
+			{
+				comchoice = 1;
+				ACS_NamedExecuteAlways("HwatMark",0,comchoice);
+			}
+		}
+		else if (aFunc == 1)
+		{
+			switch(pFunc)
+			{
+				case 0:
+				comchoice = 2;
+				break;
+				
+				case 1:
+				comchoice = 3;
+				break;
+				
+				case 2:
+				comchoice = 4;
+				break;
+				
+				case 3:
+				comchoice = 5;
+				break;
+				
+				case 4:
+				comchoice = 6;
+				break;
+				
+				case 5:
+				comchoice = 7;
+				break;
+			}
+			ACS_NamedExecuteAlways("HwatMark",0,comchoice);
+		}
+	}
+}
+
+function void PrintMockChat(void) //Once a com is declared, this will show the mock chat for everyone
+{
+	for(int i = 0; i < COM_CH; i++)
+				{
+					//If there is a blank in the array, don't print
+					if(lines2[i] == ""){continue;}
+					int o = ActivatorTID();
+					for(int j = 0; j < PlayerCount(); j++)
+					{
+						int player = PLAYER_TID+j;
+						if (player < 100) 	{player = 0+j;} //if for whatever reason tid is already used
+						else 				{}
+						SetActivator(player,0); //mmmm, orange juice.
+						if (GetUserCVar(j,"sv_hd68_hwatcom_mock") ==  TRUE)
+						{
+							SetFont("CHATBOX1");
+							HudMessage(s:"A"; HUDMSG_PLAIN, 57, 0, COM_Mw+0.006, COM_Mh-FixedDiv(2,yspace)+0.01, 5.0);
+							SetFont("SMALLFONT");
+							HudMessage(s:linesNc[i], n:linesN[i], s:"\cu: ", s:linesC[0], s:lines2[i]; HUDMSG_PLAIN, 50+i, CR_DARKGRAY, COM_Mw, COM_Mh+FixedDiv(i,yspace), 5.0);
+							//HudMessage(n:linesN[i], s:": ", s:linesC[0], s:lines2[i]; HUDMSG_PLAIN, 50+i, CR_DARKGRAY, COM_Mw, COM_Mh+FixedDiv(i,yspace), 5.0);
+						}
+						SetActivator(o,0);
+					}
+				}
+}
+function int abs (int x)
+{
+    if (x < 0)
+        return -x;
+
+    return x;
+}
+function void TakeDummy1 (void)
+{
+	int dumb = CheckInventory("HWAT_ComDummy");
+	if (dumb)
+    TakeInventory("HWAT_ComDummy",dumb);
+}
+function void TakeCycle1 (void)
+{
+	int dumb2 = CheckInventory("HWAT_ComCycle1");
+	if (dumb2)
+    TakeInventory("HWAT_ComCycle1",dumb2);
+}
+function void TakeCycle2 (void)
+{
+	int dumb3 = CheckInventory("HWAT_ComCycle2");
+	if (dumb3)
+    TakeInventory("HWAT_ComCycle2",dumb3);
+}
+function void TakeCycle3 (void) //Ik its technically TakeDummy2 but clarity, man. ironically
+{
+	int dumb4 = CheckInventory("HWAT_ComDummy2");
+	if (dumb4)
+    TakeInventory("HWAT_ComDummy2",dumb4);
+}
+function void QuickerComms (int a, int b, int c, str d)
+{
+	TakeCycle1();
+	TakeCycle2();
+	TakeCycle3();
+	GiveInventory("HWAT_ComCycle1",a);
+	GiveInventory("HWAT_ComCycle2",b);
+	GiveInventory("HWAT_ComDummy2",c);
+	lines2[0] = d;
+}
+//ty wiki https://zdoom.org/wiki/VectorLength
+function int VLength3d(int x, int y, int z)
+{
+	int len = VectorLength(x, y);
+	len = VectorLength(z, len);
+	return len;
+}
+//ty Isle https://zdoom.org/wiki/Hudmessageonactor
+function void HudMessageOnActor(int tid, int msgID, int hudX, int hudY, int xOffset, int yOffset, int range, str sprite, str text, int holdTime, str colour)
+{
+		
+	int dist, angle, vang, pitch, x, y;
+	
+	if (holdTime == 0) { holdTime = 0.1; }	
+	if (hudX == 0) { hudX = 640; }
+	if (hudY == 0) { hudY = 480; }
+	
+	if(sprite != -1)
+	{
+		
+		SetFont(sprite);
+		text = "A";
+		
+	}
+	
+	SetHudSize(hudX, hudY, 1);
+	x = GetActorX(tid) - GetActorX(0);
+	y = GetActorY(tid) - GetActorY(0);
+	
+	vang = VectorAngle(x,y);
+	angle = (vang - GetActorAngle(0) + 1.0) % 1.0;
+	
+	if(((vang+0.125)%0.5) > 0.25) dist = FixedDiv(y, sin(vang));
+	else dist = FixedDiv(x, cos(vang));
+	
+	if ((angle < 0.23 || angle > 0.85) && (dist >> 16) < range)
+	{
+		
+		if (GetActorPitch(0) >= -0.5 && GetActorPitch(0) <= 0.5)
+		{
+ 
+			pitch = VectorAngle(dist, GetActorZ(tid) - (GetActorZ(0) + GetActorViewHeight(0)));
+			pitch += FixedMul(GetActorPitch(0), 1.2) % 1.0;
+ 
+			if ((hudX/2) * sin(angle) != 0 && cos(angle) != 0 && (hudX/2) * sin(pitch) != 0 && cos(pitch) != 0)
+			{
+				
+				x = hudX/2 - ((hudX/2) * sin(angle) / cos(angle));
+				y = hudY/2 - ((HUDX/2) * sin(pitch) / cos(pitch));
+				
+				x+=xOffset;
+				y+=yOffset;
+				
+				HudMessage(s:text; HUDMSG_PLAIN, msgID, colour, (x << 16), (y << 16), holdTime);
+				
+			}
+			
+		}
+		
+	}
+	
+}

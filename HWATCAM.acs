@@ -1,0 +1,161 @@
+#library "HWATCAM.acs"
+#import "const.acs"
+#include "zcommon.acs"
+
+script "HWAT_Respawn" RESPAWN
+{
+	Thing_ChangeTID(0, 0);
+	Thing_ChangeTID(0, PLAYER_TID + PlayerNumber());
+}
+
+script "HWAT_Enter" ENTER
+{
+    Thing_ChangeTID(0, PLAYER_TID + PlayerNumber());
+}
+//...
+//Create mini coop-spy cam in corner of screen
+script "Initiate Cameras" OPEN
+{
+	for(int i = 0; i < 7; i++)
+	{
+		int cam = CAMERA_TID+i;
+		int interp = INTERP_TID+i;
+		SpawnForced("MovingCamera", 0, 0, 0, cam, 0);
+		SpawnForced("InterpolationPoint", 0, 0, 0, interp, 0);
+		SetThingSpecial(cam, 0, interp, 0, 1, 0, 0);
+		SetActorFlag(cam, "NOCLIP", 1);
+		SetActorFlag(interp, "NOCLIP", 1);
+	}
+	SetCameraToTexture(CAMERA_TID+0, "HWATCAM1",90);
+	SetCameraToTexture(CAMERA_TID+1, "HWATCAM2",90);
+	SetCameraToTexture(CAMERA_TID+2, "HWATCAM3",90);
+	SetCameraToTexture(CAMERA_TID+3, "HWATCAM4",90);
+	SetCameraToTexture(CAMERA_TID+4, "HWATCAM5",90);
+	SetCameraToTexture(CAMERA_TID+5, "HWATCAM6",90);
+	SetCameraToTexture(CAMERA_TID+6, "HWATCAM7",90);
+	SetCameraToTexture(CAMERA_TID+7, "HWATCAM8",90);
+}
+script "HwatCamTestOff" (void) net //Found in HWAT_Force.wad
+{
+	ACS_NamedTerminate("HwatCamTestOn",0);
+}
+script "HwatCamTestOn" (void) net //Found in HWAT_Force.wad
+{
+	int hs = GetScreenHeight() - GetCVar("sv_hd68_hwatcam_hscale");
+	int ws = GetScreenWidth() - GetCVar("sv_hd68_hwatcam_wscale");
+	int hp = GetCVar("sv_hd68_hwatcam_hpos") << 16;
+	int wp = GetCVar("sv_hd68_hwatcam_wpos") << 16;
+	SetHudSize(ws,hs,0);
+	SetFont("CAMBORDG");
+	HudMessage(s:"A"; HUDMSG_PLAIN, 0, 0, GetScreenWidth()+wp, GetScreenHeight()+hp, 1873);
+	delay(1);
+	restart;
+}
+
+
+//Begins the camera script initiated from HWAT Spy puke
+script "HwatCamScript" (void) net
+{
+	GiveInventory("HWAT_CamDummy",1);
+	int cs2 = CheckInventory("HWAT_CamDummy");
+	if(cs2 == PlayerNumber()+1)
+	{
+		GiveInventory("HWAT_CamDummy",1);
+		cs2 = CheckInventory("HWAT_CamDummy");
+		delay(5);
+	}
+	if(cs2 > PlayerCount())
+	{
+		//debug
+		//printbold(s:"no cam execution done");
+		SetFont("null");
+		HudMessage(s:""; HUDMSG_PLAIN, 6868, 0, 0.8, 0.2, 0);
+		HudMessage(s:""; HUDMSG_PLAIN, 6869, 0, 0.8, 0.2, 0);
+		HudMessage(s:""; HUDMSG_PLAIN, 6870, 0, 0.8, 0.2, 0);
+		TakeInventory("HWAT_CamDummy",PlayerCount()+2);
+		if (PlayerCount() < 2) //If single player or 1 player left
+		{
+			SetFont("SMALLFONT");
+			HudMessage(s:"Can't do that"; HUDMSG_FADEOUT, 6870, CR_RED, 0.8, 0.2, 0.0, 1.0, 1.0);
+			terminate;
+		}
+		terminate;
+	}
+	//debug
+	//printbold(s:"going to execute cam position update");
+	
+	int hs = GetScreenHeight() - GetCVar("sv_hd68_hwatcam_hscale");
+	int ws = GetScreenWidth() - GetCVar("sv_hd68_hwatcam_wscale");
+	int hp = GetScreenWidth() + (GetCVar("sv_hd68_hwatcam_hpos") << 16);
+	int wp = GetScreenWidth() + (GetCVar("sv_hd68_hwatcam_wpos") << 16);
+	
+	switch (cs2) {
+		case 1:
+			SetFont("HWATCAM1");
+			break;
+		case 2:
+			SetFont("HWATCAM2");
+			break;
+		case 3:
+			SetFont("HWATCAM3");
+			break;
+		case 4:
+			SetFont("HWATCAM4");
+			break;
+		case 5:
+			SetFont("HWATCAM5");
+			break;
+		case 6:
+			SetFont("HWATCAM6");
+			break;
+		case 7:
+			SetFont("HWATCAM7");
+			break;
+		case 8:
+			SetFont("HWATCAM8");
+			break;
+	}
+	
+	SetHudSize(ws, hs, 0);
+	HudMessage(s:"A"; HUDMSG_PLAIN, 6868, 0, wp, hp, 0);
+	SetFont("CAMBORD1");
+	HudMessage(s:"A"; HUDMSG_PLAIN, 6869, 0, wp, hp, 0);
+	SetFont("SMALLFONT");
+	str playa = strparam(s:GetUserCVarString(cs2-1,"hwatcom_c"),n:cs2);
+	HudMessage(s:playa; HUDMSG_PLAIN, 6870, CR_GRAY, wp, hp+40.0, 0);
+	//HudMessage(n:PlayerNumber(); HUDMSG_PLAIN, 6870, 0, 0.804, 0.325, 0);
+	ACS_NamedExecuteAlways("HwatCamScriptContinued",0,0,0,0); //Set parameters for 10599 vvv
+}
+
+
+//Must be separate script otherwise other players would not be able to execute
+//Updates the camera's position dependant on player. A continuation of "HwatCamScript"
+script "HwatCamScriptContinued" (int cs, int player, int interp, int camera) net
+{
+	while(true)
+	{
+		cs = CheckInventory("HWAT_CamDummy")-1;
+		if (cs < 0)
+			break;
+		//debug
+		//printbold(s:"Updating...");
+
+		player = PLAYER_TID+cs;
+		interp = INTERP_TID+cs;
+		camera = CAMERA_TID+cs;
+	
+		int angle = GetActorAngle(player);
+		int pitch = GetActorPitch(player);
+		int x = GetActorX(player);
+		int y = GetActorY(player);
+		int z = GetActorZ(player)+GetActorProperty(player,APROP_Height)-6.0;
+		//int xyr = 10 * cos (pitch) >> 16;
+		SetActorPosition(interp, x+cos(angle)*10, y+sin(angle)*10, z, 0);
+		SetActorAngle(camera, angle);
+		SetActorPitch(camera, pitch);
+		Thing_Activate(camera);
+		
+		delay(1);
+	}
+}
+//...

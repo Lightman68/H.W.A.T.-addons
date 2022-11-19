@@ -1,0 +1,7 @@
+#library "hwat"
+#include "zcommon.acs"
+
+#libdefine CAMERA_TID	30660
+#libdefine INTERP_TID	30670
+#libdefine PLAYER_TID	26800
+#libdefine MARKER_TID	26900

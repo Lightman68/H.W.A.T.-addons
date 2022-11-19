@@ -1,0 +1,79 @@
+//-------------------------------------------------------------------------------------------
+// My Menus
+//-------------------------------------------------------------------------------------------
+AddOptionMenu "OptionsMenu"
+{
+	Submenu "H.W.A.T. Options", "HWAT_Options"
+}
+OptionMenu "HWAT_Options" 
+{
+	StaticText ""
+	StaticText "H.W.A.T. Force Options"
+	Submenu "Customize", "HD_68_CustomizeMenu1"
+}
+//unused
+OptionValue "H.W.A.T._Nice_HostageWinConditions" {
+	0,	"At least one must be free"
+	1,	"At least half must be free"
+	2,	"All must at least be free"
+	3,	"All must be free, secured, and told a bedtime story"
+}
+//unused
+OptionValue "H.W.A.T._Nice_HostageLoseConditions" {
+	0,	"Who cares"
+	1,	"If all die"
+	2,	"If half die"
+	3,	"If two die"
+	4,	"If even one dies"
+	5,	"If one succumbs to minor abuse"
+}
+//unused
+OptionValue "H.W.A.T._Nice_OperatorLoseConditions" {
+	0,	"Until everyone dies"
+	1,	"At most one fatality"
+	2,	"All operators must not drop below half health"
+	3,	"Fatalities unacceptable"
+	4,	"Fatalities nor casualties unacceptable"
+}
+
+OptionMenu "HD_68_CustomizeMenu1"
+{
+	Title "Customize H.W.A.T. Force"
+		
+	Slider "Hostage Count Percentage", "sv_hd68_hostagecount", 0, 200, 10
+	
+	StaticText ""
+	StaticText "Mini SpyCam"
+	Slider "Horizontal Scale", "sv_hd68_hwatcam_wscale", 0, 3000, 25
+	Slider "Vertical Scale", "sv_hd68_hwatcam_hscale", 0, 3000, 25
+	Slider "Horizontal Position", "sv_hd68_hwatcam_wpos", 0, 3000, 20
+	Slider "Vertical Position", "sv_hd68_hwatcam_hpos", 0, 3000, 20
+	StaticText ""
+	Slider "Rate", "sv_hd68_hwatcam_rate", 1, 10, 1
+	Command "Start Test", "puke HwatCamTestOn" //Found in HWATForce_addons.pk3
+	Command "Stop Test", "puke HwatCamTestOff" //Found in HWATForce_addons.pk3
+	
+	StaticText ""
+	StaticText ""
+	StaticText "Quick comms"
+	Slider "Scroll Buffer (-sensitivity)", "sv_hd68_hwatcom_smooth", 5, 200, 1
+	Option "Com Menu helping indicators", "sv_hd68_hwatcom_helper", "OnOff"
+	Option "Reset after every use", "sv_hd68_hwatcom_reset", "OnOff"
+	Option "Enable \"mock\" chat", "sv_hd68_hwatcom_mock", "OnOff"
+	StaticText ""
+	/*StaticText ""
+	StaticText "Win/Lose conditions"
+	StaticText ""
+	Option "All enemies must be neutralized to win", "sv_wincon_enemies", "OnOff"
+	Option "Hostage win condition", "sv_wincon_hostages", "H.W.A.T._Nice_HostageWinConditions"
+	Slider "","sv_wincon_hostages", 0, 3, 1
+	StaticText ""
+	Option "Hostage lose condition", "sv_losecon_hostages", "H.W.A.T._Nice_HostageLoseConditions"
+	Slider "","sv_losecon_hostages", 0, 5, 1
+	StaticText ""
+	Option "Operator lose conditions", "sv_losecon_operators", "H.W.A.T._Nice_OperatorLoseConditions"
+	Slider "","sv_losecon_operators", 0, 4, 1
+	StaticText ""
+	*/
+}
+

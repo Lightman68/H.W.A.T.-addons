@@ -1,0 +1,15 @@
+#library "HWATZIP.acs"
+#import "const.acs"
+#include "zcommon.acs"
+
+script "DeSubmit" (void)
+{
+	int wfac;
+	if(CheckInventory("HWAT_RestrainFactor") >= 10 && CheckInventory("HWAT_ArrestedFactor") != 1)
+	{
+		SetActorState(0,"ArrestMe",0);
+	}
+	TakeInventory("HWAT_RestrainFactor",1);
+	Delay(35);
+	restart;
+}

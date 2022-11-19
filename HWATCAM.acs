@@ -35,11 +35,11 @@ script "Initiate Cameras" OPEN
 	SetCameraToTexture(CAMERA_TID+6, "HWATCAM7",90);
 	SetCameraToTexture(CAMERA_TID+7, "HWATCAM8",90);
 }
-script "HwatCamTestOff" (void) net //Found in HWAT_Force.wad
+script "HwatCamTestOff" (void) net
 {
 	ACS_NamedTerminate("HwatCamTestOn",0);
 }
-script "HwatCamTestOn" (void) net //Found in HWAT_Force.wad
+script "HwatCamTestOn" (void) net
 {
 	int hs = GetScreenHeight() - GetCVar("sv_hd68_hwatcam_hscale");
 	int ws = GetScreenWidth() - GetCVar("sv_hd68_hwatcam_wscale");

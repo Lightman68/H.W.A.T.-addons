@@ -50,8 +50,8 @@ OptionMenu "HD_68_CustomizeMenu1"
 	Slider "Vertical Position", "sv_hd68_hwatcam_hpos", 0, 3000, 20
 	StaticText ""
 	Slider "Rate", "sv_hd68_hwatcam_rate", 1, 10, 1
-	Command "Start Test", "puke HwatCamTestOn" //Found in HWATForce_addons.pk3
-	Command "Stop Test", "puke HwatCamTestOff" //Found in HWATForce_addons.pk3
+	Command "Start Test", "pukename HwatCamTestOn" //Found in HWATForce_addons.pk3
+	Command "Stop Test", "pukename HwatCamTestOff" //Found in HWATForce_addons.pk3
 	
 	StaticText ""
 	StaticText ""

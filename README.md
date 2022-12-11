@@ -1,9 +1,9 @@
 Help needed. Need input from multiplayer sessions, specially from 3+ player games. Tyty
 
 # H.W.A.T. Force
-H.W.A.T. Force (Hideous Weapons and Tactics) is an HDest-focused mod to replicate SWAT4's communication macros and spy camera. Currently undergoing bugfixing to become stable. Please feel free to give feedback or bug reports in the HDest discord.
+H.W.A.T. Force (Hideous Weapons and Tactics) is an HDest-focused mod to replicate SWAT4's communication macros and spy camera. Currently undergoing bugfixing to become stable. Please feel free to give feedback or bug reports.
 
-These are addons to go with H.W.A.T. Force. but can be used independently with other maps. Includes spy camera, chat macros, drop down comms, and ping system.
+These are addons to go with H.W.A.T. Force. but can be used independently with other maps. Includes teammate spy camera, chat macros, drop down comms, and ping system.
 
 ### Comms
 

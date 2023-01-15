@@ -153,10 +153,11 @@ script "HwatComms" (int quicker) net
 			//pFunc and aFunc are multiplied/divided in order for the + to snap at the correct position
 		int CSaCal = (FixedMul(FixedDiv(35,CS+1),FixedDiv(aSmooth,1000))); 	//(35/CS+1)(aSmooth/1000)
 		int CSpCal = (FixedMul(FixedDiv(10,CS+1),FixedDiv(pSmooth,1000))); 	//(5/CS+1)(pSmooth/1000)
-		if(GetUserCVar(player, "sv_hd68_hwatcom_helper") == TRUE){
-		HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)-(CSaCal), COM_L1h-FixedDiv(2,yspace)+0.008, 0.05);
-		HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)+0.02, COM_L1h-FixedDiv(2,yspace)+0.04+(0.009*(FixedMul(pFunc,2.4))-(CSpCal)), 0.05);
-		//pFunc and aFunc are multiplied/divided in order for the + to snap at the correct position
+		if(GetUserCVar(player, "sv_hd68_hwatcom_helper") == TRUE)
+		{
+			HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)-(CSaCal), COM_L1h-FixedDiv(2,yspace)+0.008, 0.05);
+			HudMessage(s:"+"; HUDMSG_PLAIN, 0, CR_RED, COM_L1w-xspace*(aFunc+1)+0.02, COM_L1h-FixedDiv(2,yspace)+0.04+(0.009*(FixedMul(pFunc,2.4))-(CSpCal)), 0.05);
+			//pFunc and aFunc are multiplied/divided in order for the + to snap at the correct position
 		}
 		
 		//The 3 little diamonds indicating the horizontal menus
@@ -167,36 +168,37 @@ script "HwatComms" (int quicker) net
 		int quicker2 = strparam(s:"\cf",s:cCons);
 		switch (quicker)
 		{
-		case 1:
-		QuickerComms(1,0,0,quicker2);
-		break;
-		case 2:
-		QuickerComms(5,1,0,quicker2);
-		break;
-		case 3:
-		QuickerComms(3,1,0,quicker2);
-		break;
-		case 4:
-		QuickerComms(3,2,0,quicker2);
-		break;
-		case 5:
-		QuickerComms(2,2,0,quicker2);
-		break;
-		case 6:
-		QuickerComms(1,0,1,quicker2);
-		break;
-		case 7:
-		QuickerComms(5,0,0,quicker2);
-		break;
-		case 8:
-		QuickerComms(3,0,0,quicker2);
-		break;
-		case 9:
-		QuickerComms(2,1,1,quicker2);
-		break;
+			case 1:
+			QuickerComms(1,0,0,quicker2);
+			break;
+			case 2:
+			QuickerComms(5,1,0,quicker2);
+			break;
+			case 3:
+			QuickerComms(3,1,0,quicker2);
+			break;
+			case 4:
+			QuickerComms(3,2,0,quicker2);
+			break;
+			case 5:
+			QuickerComms(2,2,0,quicker2);
+			break;
+			case 6:
+			QuickerComms(1,0,1,quicker2);
+			break;
+			case 7:
+			QuickerComms(5,0,0,quicker2);
+			break;
+			case 8:
+			QuickerComms(3,0,0,quicker2);
+			break;
+			case 9:
+			QuickerComms(2,1,1,quicker2);
+			break;
 		}
-		if(quicker < 1){
-		GiveInventory("HWAT_ComDummy",1); 										//Intentionally accrues dummyness so situation comms can work
+		if(quicker < 1)
+		{
+			GiveInventory("HWAT_ComDummy",1); 									//Intentionally accrues dummyness so situation comms can work
 		}
 		//debug
 		//SetFont("BIGFONT");
@@ -336,7 +338,7 @@ script "HwatComms" (int quicker) net
 		TakeInventory("HWAT_ComCycle2",dumbcycle2);
 	}
 }
-} //the else statement at the start
+} //sorry, it's the else statement at the start
 
 
 //Mock chat simulates chat scrolling up

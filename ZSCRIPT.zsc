@@ -1,0 +1,9 @@
+version "4.8"
+
+//const HWATCONST = 0;
+
+#include "zscript/constants.zsc"
+//#include "zscript/Omniwand_Spawner.zs"
+//#include "zscript/zscript.omniwand.zs"
+//#include "zscript/suspects.zs"
+//#include "zscript/ties.zs"

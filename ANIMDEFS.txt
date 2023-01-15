@@ -1,11 +1,11 @@
-cameratexture HWATCAM1 64 64
-cameratexture HWATCAM2 64 64
-cameratexture HWATCAM3 64 64
-cameratexture HWATCAM4 64 64
-cameratexture HWATCAM5 64 64
-cameratexture HWATCAM6 64 64
-cameratexture HWATCAM7 64 64
-cameratexture HWATCAM8 64 64
+cameratexture HWATCAM1 128 128
+cameratexture HWATCAM2 128 128
+cameratexture HWATCAM3 128 128
+cameratexture HWATCAM4 128 128
+cameratexture HWATCAM5 128 128
+cameratexture HWATCAM6 128 128
+cameratexture HWATCAM7 128 128
+cameratexture HWATCAM8 128 128
 cameratexture HWATSRV1 128 128
 
 //texture IODROCK1

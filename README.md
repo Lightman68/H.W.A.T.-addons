@@ -1,4 +1,5 @@
-Current main file under some work. Uploading files isn't as I intentionally expected. Use the latest release build (v0.3.8).
+### Please use the latest release build.
+Current main file under some work. Uploading files isn't as I intentionally expected.
 
 # H.W.A.T. Force
 H.W.A.T. Force (Hideous Weapons and Tactics) is an HDest-focused mod to replicate SWAT4's communication macros and spy camera.

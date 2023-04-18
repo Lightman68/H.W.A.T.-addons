@@ -121,7 +121,7 @@ script "HwatCamScript" (void) net
 	SetFont("CAMBORD1");
 	HudMessage(s:"A"; HUDMSG_PLAIN, 6869, 0, wp, hp, 0);
 	SetFont("SMALLFONT");
-	str playa = strparam(s:GetUserCVarString(cs2-1,"hwatcom_c"),n:cs2);
+	str playa = strparam(s:GetUserCVarString(cs2-1,"sv_hd68_hwatcom_namecolor"),n:cs2);
 	HudMessage(s:playa; HUDMSG_PLAIN, 6870, CR_GRAY, wp, hp+40.0, 0);
 	//HudMessage(n:PlayerNumber(); HUDMSG_PLAIN, 6870, 0, 0.804, 0.325, 0);
 	ACS_NamedExecuteAlways("HwatCamScriptContinued",0,0,0,0); //Set parameters for 10599 vvv
@@ -148,9 +148,19 @@ script "HwatCamScriptContinued" (int cs, int player, int interp, int camera) net
 		int pitch = GetActorPitch(player);
 		int x = GetActorX(player);
 		int y = GetActorY(player);
-		int z = GetActorZ(player)+GetActorProperty(player,APROP_Height)-6.0;
+		int z = GetActorZ(player)+GetActorProperty(player,APROP_Height)-2.0;
+		int i = 0;
 		//int xyr = 10 * cos (pitch) >> 16;
-		SetActorPosition(interp, x+cos(angle)*10, y+sin(angle)*10, z, 0);
+		while(!(SetActorPosition(interp, x+cos(angle-0.95)*9, y+sin(angle-0.95)*9, z+sin(pitch+0.0)*-15, 0)))
+		{
+			z-=1.0;
+			i++;
+			if (i > 5)
+			{
+				break;
+			}
+		}
+		i = 0;
 		SetActorAngle(camera, angle);
 		SetActorPitch(camera, pitch);
 		Thing_Activate(camera);

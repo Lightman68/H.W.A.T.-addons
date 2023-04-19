@@ -219,7 +219,7 @@ script "HwatComms" (int quicker) net
 				if(quicker < 1) 												//if not pressing a quicker(tm) comm then just do regular shit
 				lines2[0] = cCons;
 				linesN[0] = PlayerNumber()+1;									//idk why it fuckn needs +1 it just works im tired af
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");		//no +1 for this one because.... ?????
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");		//no +1 for this one because.... ?????
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				int s = strparam(s:"hwatcom/", s:GetUserCVarString(player, "hwatcom_v"), s:"/", i:cCons+1);
 				//debug
@@ -251,7 +251,7 @@ script "HwatComms" (int quicker) net
 					SetActivator(pTid,AAPTR_DEFAULT);
 					/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 					linesN[0] = PlayerNumber()+1; //name of marker dude
-					linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+					linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 					SetUserCVarString(player,"sv_hd68_hwatcom_justsaid",lines2[0]);
 					Log(n:0, s:": \cn",s:lines2[0]);
 					PrintMockChat();
@@ -272,7 +272,7 @@ script "HwatComms" (int quicker) net
 					lines2[0] = log2;
 					Log(n:0, s:": \cgWatch Out! i've spotted a", s:log1);
 					linesN[0] = PlayerNumber()+1;
-					linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+					linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 					SetUserCVarString(player,"sv_hd68_hwatcom_justsaid","Watch out!!");
 					PrintMockChat();
 					TakeDummy1();
@@ -286,7 +286,7 @@ script "HwatComms" (int quicker) net
 				lines2[0] = "\cfRegroup";
 				Log(n:0,s:": \cfRegroup");
 				linesN[0] = PlayerNumber()+1;
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","Regroup");
 				PrintMockChat();
@@ -300,7 +300,7 @@ script "HwatComms" (int quicker) net
 				lines2[0] = "\cfI'm outta here!";
 				Log(n:0,s:": \cfI'm outta here!");
 				linesN[0] = PlayerNumber()+1;
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","I'm outta here!");
 				PrintMockChat();
@@ -314,7 +314,7 @@ script "HwatComms" (int quicker) net
 				lines2[0] = "\cfRoger";
 				Log(n:0,s:": \cfRoger");
 				linesN[0] = PlayerNumber()+1;
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				SetUserCVarString(player, "sv_hd68_hwatcom_justsaid","Roger");
 				PrintMockChat();
@@ -381,7 +381,7 @@ script "HwatMarkScript" (int pTid, int comchoice, int onlymark) net
 	player = (PLAYER_TID-pTid)*-1;
 	//printbold(d:player);
 	if (player > 100) 	{player = player-player;}
-	else 				{str customc = GetUserCVarString(player,"sv_hd68_hwatcom_namecolor");}
+	else 				{str customc = GetUserCVarString(player,"hwatcom_ctest2");}
 	//printbold(s:customc);
 	//TakeDummy1();
 	if(onlymark == 0) //from script "HwatMark", if not given from there then it skips this
@@ -473,7 +473,7 @@ script "HwatMarkScript" (int pTid, int comchoice, int onlymark) net
 				{
 					test = (VectorLength(GetActorX(nTid2)-GetActorX(PLAYER_TID+j),GetActorY(nTid2)-GetActorY(PLAYER_TID+j))>>16)/32;
 					SetActivator(PLAYER_TID+j,0);
-					customc = GetUserCVarString(player,"sv_hd68_hwatcom_namecolor");
+					customc = GetUserCVarString(player,"hwatcom_ctest2");
 					cc1 = strparam(s:customc,s:"><");
 					cc2 = strparam(s:customc,s:".");
 					cc3 = strparam(s:customc,s:".");
@@ -493,7 +493,7 @@ script "HwatMarkScript" (int pTid, int comchoice, int onlymark) net
 				{
 					test = (VectorLength(GetActorX(nTid2)-GetActorX(PLAYER_TID+j),GetActorY(nTid2)-GetActorY(PLAYER_TID+j))>>16)/32;
 					SetActivator(PLAYER_TID+j,0);
-					customc = GetUserCVarString(player,"sv_hd68_hwatcom_namecolor");
+					customc = GetUserCVarString(player,"hwatcom_ctest2");
 					cc1 = strparam(s:customc,s:"*");
 					cc2 = strparam(s:customc,s:".");
 					cc3 = strparam(s:customc,s:".");
@@ -527,7 +527,7 @@ script "HwatMark" (int comchoice) net
 				lines2[0] = strparam(s:"\cn", n:0); //this goes first to get the name of executor
 				SetActivator(pTid,AAPTR_DEFAULT);
 				linesN[0] = PlayerNumber()+1;
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor"); //no +1 for this one because.... ?????
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2"); //no +1 for this one because.... ?????
 				SetUserCVarString(player,"sv_hd68_hwatcom_justsaid",lines2[0]);
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				Log(n:0, s:": \cn",s:lines2[0]); //name of ally
@@ -547,7 +547,7 @@ script "HwatMark" (int comchoice) net
 				lines2[0] = log2;
 				Log(n:0, s:": \cgWatch Out! i've spotted a", s:log1);
 				linesN[0] = PlayerNumber()+1;
-				linesNc[0] = GetUserCVarString(PlayerNumber(),"sv_hd68_hwatcom_namecolor");
+				linesNc[0] = GetUserCVarString(PlayerNumber(),"hwatcom_ctest2");
 				SetUserCVarString(player,"sv_hd68_hwatcom_justsaid","Watch out!!");
 				/*lines2*/ACS_NamedExecuteAlways("RecordMockChat",0);
 				PrintMockChat();
@@ -741,14 +741,14 @@ function void HudMessageOnActor(int tid, int msgID, int hudX, int hudY, int xOff
 	if(((vang+0.125)%0.5) > 0.25) dist = FixedDiv(y, sin(vang));
 	else dist = FixedDiv(x, cos(vang));
 	
-	if ((angle < 0.23 || angle > 0.85) && (dist >> 16) < range)
+	if ((angle < 0.12 || angle > 0.88) && (dist >> 16) < range)
 	{
 		
-		if (GetActorPitch(0) >= -0.5 && GetActorPitch(0) <= 0.5)
+		if (GetActorPitch(0) >= -0.25 && GetActorPitch(0) <= 0.25)
 		{
  
 			pitch = VectorAngle(dist, GetActorZ(tid) - (GetActorZ(0) + GetActorViewHeight(0)));
-			pitch += FixedMul(GetActorPitch(0), 1.2) % 1.0;
+			pitch += FixedMul(GetActorPitch(0), 1.15) % 1.0;
  
 			if ((hudX/2) * sin(angle) != 0 && cos(angle) != 0 && (hudX/2) * sin(pitch) != 0 && cos(pitch) != 0)
 			{

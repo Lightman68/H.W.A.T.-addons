@@ -10,6 +10,6 @@ user bool sv_hd68_hwatcom_reset = TRUE;
 user bool sv_hd68_hwatcom_mock = FALSE;
 user bool sv_hd68_hwatcom_scale1 = TRUE;
 user bool sv_hd68_hwatcom_scale2 = TRUE;
-user string sv_hd68_hwatcom_namecolor = "\cu";
+user string hwatcom_ctest2 = "";
 user string hwatcom_v = "lead";
 user string sv_hd68_hwatcom_justsaid = "";
